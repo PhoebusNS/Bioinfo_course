@@ -2,6 +2,8 @@ __author__ = 'Jacques'
 
 import os
 
+current_max = 0
+current_text = ''
 
 def suffix_tree_builder(genome):
     """Suffix_tree_builder
@@ -40,51 +42,25 @@ def update_edges(index, node):
     node['_e'].append(index)
     return None
 
-def edge_len(node):
-    l = 0
+def repeat_finder(node, index, text):
+    stop = True
     for key, value in node.items():
-        if key == '_e':
-            l += len(node['_e'])
-        else:
-            l += 1
-    return l
-
-
-def tree_reducer(root_node):
-    """Tree_reducer
-    Reduces all non branching paths to multiple letter paths
-    Does NOT work so far"""
-    for key, value in list(root_node.items()):
-        if key in ['A', 'C', 'G', 'T', ]:
-            if edge_len(value) >= 2:
-                tree_reducer(value)
-            if edge_len(value) == 1:
-                text = key
-                current = value
-                while edge_len(current) == 1 and '_e' not in current.keys():
-                    current = list(current.values())[0]
-                    text += list(current.keys())[0]
-                del root_node[key]
-                root_node[text] = current
-                tree_reducer(current)
-    return None
-
-def tree_printer(root_node, conn):
-    for key, value in root_node.items():
-        if key == '_e':
-            for index in value:
-                conn.write(genome[index:]+'\n')
-        else:
-            conn.write(key+'\n')
-            tree_printer(value, conn)
+        if key in ['A', 'C', 'G', 'T']:
+            repeat_finder(value, index+1, text+key)
+            stop = False
+    if stop:
+        global current_max
+        global current_text
+        if index > current_max:
+            current_max = index
+            current_text = text
     return None
 
 
 if __name__ == '__main__':
     os.chdir('C:\\Users\\Jacques\\Downloads')
-    with open('dataset_294_8.txt', 'r') as f:
-        genome = f.readline()
+    with open('dataset_296_5.txt', 'r') as f:
+        genome = f.readline()+'$'
     suffix_tree = suffix_tree_builder(genome)
-    with open('suffix_out.txt', 'w') as g:
-        tree_printer(suffix_tree, g)
-
+    repeat_finder(suffix_tree, 0, '')
+    print(current_text)
