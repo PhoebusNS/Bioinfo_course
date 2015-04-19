@@ -42,7 +42,7 @@ def next_step(leaf, node, dist, prev):
 
 if __name__ == '__main__':
     os.chdir('C:\\Users\\Jacques\\Downloads')
-    with open('dataset_10328_11.txt', 'r') as f:
+    with open('tree_out.txt', 'r') as f:
         n, d = graph_builder(f)
     dist_mat = [[0 for __ in range(n)] for _ in range(n)]
     for i in range(n):
