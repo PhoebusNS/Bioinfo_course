@@ -80,10 +80,10 @@ def tree_printer(node, conn):
     else:
         node_a = node.left
         node_b = node.right
-        g.write(str(node.index)+'->'+str(node_a.index)+':'+'{0:.3f}'.format(node.le)+'\n')
-        g.write(str(node.index)+'->'+str(node_b.index)+':'+'{0:.3f}'.format(node.re)+'\n')
-        g.write(str(node_a.index)+'->'+str(node.index)+':'+'{0:.3f}'.format(node.le)+'\n')
-        g.write(str(node_b.index)+'->'+str(node.index)+':'+'{0:.3f}'.format(node.re)+'\n')
+        conn.write(str(node.index)+'->'+str(node_a.index)+':'+'{0:.3f}'.format(node.le)+'\n')
+        conn.write(str(node.index)+'->'+str(node_b.index)+':'+'{0:.3f}'.format(node.re)+'\n')
+        conn.write(str(node_a.index)+'->'+str(node.index)+':'+'{0:.3f}'.format(node.le)+'\n')
+        conn.write(str(node_b.index)+'->'+str(node.index)+':'+'{0:.3f}'.format(node.re)+'\n')
         if not node_a.leaf:
             tree_printer(node_a, conn)
         if not node_b.leaf:
