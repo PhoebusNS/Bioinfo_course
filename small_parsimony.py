@@ -21,7 +21,6 @@ def seq_dist(a, b):
     return summ
 
 
-
 class Node(object):
     def __init__(self, index, leaf):
         self.index = index

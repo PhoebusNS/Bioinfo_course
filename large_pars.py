@@ -2,6 +2,7 @@ __author__ = 'Jacques'
 
 import os
 from collections import defaultdict
+from copy import copy, deepcopy
 
 alphabet = ['A', 'C', 'G', 'T', ]
 
@@ -19,6 +20,37 @@ def seq_dist(a, b):
         if a[i] != b[i]:
             summ += 1
     return summ
+
+
+def exchanger(aa, bb, tree):
+    first_node = tree[aa]
+    second_node = tree[bb]
+    first_children = copy(first_node.children)
+    second_children = copy(second_node.children)
+    first_children.remove(bb)
+    second_children.remove(aa)
+    fixed_node = first_children[0]
+    treelist = list()
+    for ii in range(2):
+        new_node1 = Node(aa, False)
+        new_node1.add_node(bb)
+        new_node1.add_node(fixed_node)
+        new_node1.add_node(second_children[ii])
+        new_node2 = Node(bb, False)
+        new_node2.add_node(aa)
+        new_node2.add_node(first_children[1])
+        new_node2.add_node(second_children[(ii+1)%2])
+        new_tree = deepcopy(tree)
+        new_tree[aa] = new_node1
+        new_tree[bb] = new_node2
+        if not new_tree[first_children[1]].leaf:
+            new_tree[first_children[1]].remove_node(aa)
+            new_tree[first_children[1]].add_node(bb)
+        if not new_tree[second_children[ii]].leaf:
+            new_tree[second_children[ii]].remove_node(bb)
+            new_tree[second_children[ii]].add_node(aa)
+        treelist.append(new_tree)
+    return treelist
 
 
 def is_int(s):
@@ -99,7 +131,7 @@ def interpreter(conn):
                 nl[running].text = seq
                 nl[a].add_node(running)
                 running += 1
-    return nl
+    return nn, nl
 
 
 def tree_scoring(curr_letter):
@@ -164,10 +196,21 @@ def tree_rooting(node):
             nodelist[child].remove_node(ii)
         tree_rooting(nodelist[child])
 
+
+def find_all_edges(tree):
+    l = []
+    for i, value in tree.items():
+        if i >= n_leaves:
+            for j in value.children:
+                if j >= n_leaves and j > i:
+                    l.append((i, j))
+    return l
+
 if __name__ == '__main__':
     os.chdir('C:\\Users\\Jacques\\Downloads')
-    with open('dataset2.txt', 'r') as f:
-        nodelist = interpreter(f)
+    with open('dataset_10336_8.txt', 'r') as f:
+        n_leaves, nodelist = interpreter(f)
+    saved_tree = deepcopy(nodelist)
     seq_len = len(nodelist[0].text)
     # Tree rooting process
     new_root = len(nodelist)
@@ -194,7 +237,48 @@ if __name__ == '__main__':
     del nodelist[new_root]
     nodelist[last_node].add_node(connected_node)
     nodelist[last_node].edges[-1] = top_edge_weight
-    with open('parsimony_out.txt', 'w') as g:
-        g.write(str(running_sum)+'\n')
-        tree_printer(nodelist[last_node], g)
+    g = open('large_pars_out.txt', 'w')
+    g.write(str(running_sum)+'\n')
+    tree_printer(nodelist[last_node], g)
+    g.write('\n')
 
+    current_min = running_sum
+    still_working = True
+
+    # Tree exchange
+    while still_working:
+        still_working = False
+        exchanges = find_all_edges(saved_tree)
+        for a, b in exchanges:
+            treelist = exchanger(a, b, saved_tree)
+            for tree in treelist:
+                temp_tree = deepcopy(tree)
+                nodelist = tree
+                new_root = len(nodelist)
+                last_node = new_root - 1
+                connected_node = max(nodelist[last_node].children)
+                nodelist[new_root] = Node(new_root, False)
+                nodelist[new_root].add_node(last_node)
+                nodelist[new_root].add_node(connected_node)
+                nodelist[last_node].remove_node(connected_node)
+                nodelist[connected_node].remove_node(last_node)
+                tree_rooting(nodelist[new_root])
+
+                # Tree scoring
+                for i in range(seq_len):
+                    tree_scoring(i)
+                    tree_pruning(nodelist[new_root])
+                    for _, node in nodelist.items():
+                        node.reinit()
+                running_sum = 0
+                tree_edge_weighter(nodelist[new_root])
+                if running_sum < current_min:
+                    current_min = running_sum
+                    new_saved_tree = temp_tree
+                    tree_to_print = deepcopy(nodelist)
+                    still_working = True
+        if still_working:
+            g.write(str(current_min)+'\n')
+            tree_printer(tree_to_print[len(tree_to_print)-1], g)
+            g.write('\n')
+            saved_tree = deepcopy(new_saved_tree)
