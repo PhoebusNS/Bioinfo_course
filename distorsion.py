@@ -39,8 +39,12 @@ if __name__ == '__main__':
     os.chdir('C:\\Users\\Jacques\\Downloads')
     with open('dataset_10927_3.txt', 'r') as f:
         k, m, centers, point_set = interpreter(f)
-    d = 0.0
+    max_dist = 0.0
+    distorsion = 0.0
     for point in point_set:
-        d += (dist_set(point, centers))**2
-    d /= len(point_set)
-    print(d)
+        dd = dist_set(point, centers)
+        if dd > max_dist:
+            max_dist = dd
+        distorsion += dd**2
+    distorsion /= len(point_set)
+    print(max_dist, distorsion)
