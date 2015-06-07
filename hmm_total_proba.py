@@ -1,7 +1,5 @@
 __author__ = 'Jacques'
 
-__author__ = 'Jacques'
-
 from os import chdir
 
 
