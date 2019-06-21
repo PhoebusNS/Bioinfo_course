@@ -30,10 +30,9 @@ def burrows_transform(text):
     """burrows_transform
     Generates the Burrows Wheeler transform of a given text
     Uses the ManberMyers algorithm for suffix array construction"""
+    global suffix
     if 'suffix' not in globals():
         suffix = suffix_array(text)
-    else:
-        global suffix
     bwt = ''
     for i in suffix:
         if i == 0:
